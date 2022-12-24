@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+  bot:
+    container_name: tg_bot
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "./bot/bot.py"]
+    ports:
+      - "3000:3000"
+  db:
+    container_name: database
+    image: postgres:15
+    command: ["postgres", "-c", "config_file=/etc/my_postgresql.conf"]
+    environment:
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_USER: $POSTGRES_LOGIN
+      POSTGRES_PASSWORD: $POSTGRES_PASS
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "54320:54320"
+    volumes:
+      - ./my_postgresql.conf:/etc/my_postgresql.conf
